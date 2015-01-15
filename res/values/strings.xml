@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BSumang HelloWorld</string>
+    <string name="MAP_API_KEY">AIzaSyDe0okKPEKbPI2GZEmW2dDFHnbTjbd9wfk</string>
+    <string name="find_locations">Hello World Offices</string>
+    <string name="call">Call</string>
+    <string name="directions">Directions</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_show_locations">Hello World Locations</string>
+    <string name="title_activity_show_locations_detail">Office Information</string>
+    <string name="hello_world">Hello world!</string>
+
+</resources>
