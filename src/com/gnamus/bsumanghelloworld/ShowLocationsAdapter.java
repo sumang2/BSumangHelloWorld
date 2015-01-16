@@ -9,10 +9,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.gnamus.bsumanghelloworld.utilities.LocationUtils;
+import com.gnamus.bsumanghelloworld.utilities.SessionManager;
+
 public class ShowLocationsAdapter extends ArrayAdapter<Location> {
 
 	private final Activity mActivity;
 	private final ArrayList<Location> list;
+	public SessionManager session;
+	private double distance;
 
 	public ShowLocationsAdapter(Activity mActivity, ArrayList<Location> list) {
 
@@ -31,6 +36,7 @@ public class ShowLocationsAdapter extends ArrayAdapter<Location> {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
+		session = new SessionManager(mActivity.getApplicationContext());
 		View rowView = convertView;
 
 		if (rowView == null) {
@@ -58,7 +64,15 @@ public class ShowLocationsAdapter extends ArrayAdapter<Location> {
 		holder.address2.setText(list.get(position).getCity() + ", "
 				+ list.get(position).getState() + " "
 				+ list.get(position).getZipPostalCode());
-		holder.distance.setText("0 mi.");
+
+		if (session.getCurrentLatitude() != 0) {
+			distance = LocationUtils.calculateDistance(
+					session.getCurrentLatitude(),
+					session.getCurrentLongitude(),
+					Double.parseDouble(list.get(position).getLatitude()),
+					Double.parseDouble(list.get(position).getLongitude()));
+			holder.distance.setText(distance + " miles");
+		}
 
 		return rowView;
 

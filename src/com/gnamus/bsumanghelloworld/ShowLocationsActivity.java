@@ -7,11 +7,12 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -36,13 +37,15 @@ public class ShowLocationsActivity extends Activity {
 	public ShowLocationsAdapter adapter = null;
 	TextView totalStars;
 	Activity myActivity;
-	SessionManager session;
 
 	private WebService service;
 
 	private Toast toast = null;
 
-	// private SessionManager session;
+	public SessionManager session;
+	private static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 100; // meters
+	private static final long MINIMUM_TIME_BETWEEN_UPDATES = 3000; // milliseconds
+	protected LocationManager locationManager;
 
 	static final LatLng HQ = new LatLng(42.475162, -83.134733);
 	private GoogleMap map;
@@ -55,7 +58,8 @@ public class ShowLocationsActivity extends Activity {
 		toast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
 
 		session = new SessionManager(getApplicationContext());
-		
+		session.setCurrentLatitude(0);
+
 		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
 				.getMap();
 
@@ -68,8 +72,6 @@ public class ShowLocationsActivity extends Activity {
 		initWebService();
 		getOfficeLocations();
 
-		// session = new SessionManager(getApplicationContext());
-
 		listLocations = (ListView) findViewById(R.id.locations_list);
 		adapter = new ShowLocationsAdapter(this, officesArrayList);
 		listLocations.setAdapter(adapter);
@@ -81,22 +83,11 @@ public class ShowLocationsActivity extends Activity {
 			}
 		});
 
-		// if (officesArrayList == null || officesArrayList.size() < 1) {
-		// Log.i("OFFICE empty", "empty");
-		// } else {
-		// Log.i("OFFICE name", officesArrayList.get(0).getName().toString());
-		// setMapMarkers();
-		//
-		// }
-
 		// detail view on item click
 		listLocations
 				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 					public void onItemClick(AdapterView<?> parentAdapter,
 							View view, int position, long id) {
-//						toast.setText("Item with id [" + id + "] - Position ["
-//								+ position + "] ");
-//						toast.show();
 
 						Location selectedLocation = (Location) listLocations
 								.getItemAtPosition(position);
@@ -117,19 +108,25 @@ public class ShowLocationsActivity extends Activity {
 								.toString());
 						i.putExtra("phone", selectedLocation.getPhone()
 								.toString());
-						i.putExtra("fax", selectedLocation.getFax()
-								.toString());
+						i.putExtra("fax", selectedLocation.getFax().toString());
 						i.putExtra("latitude", selectedLocation.getLatitude()
 								.toString());
 						i.putExtra("longitude", selectedLocation.getLongitude()
 								.toString());
-						i.putExtra("office_image", selectedLocation.getOfficeImage()
-								);
+						i.putExtra("office_image",
+								selectedLocation.getOfficeImage());
 
 						startActivity(i);
 
 					}
 				});
+
+		// get current location
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				MINIMUM_TIME_BETWEEN_UPDATES,
+				MINIMUM_DISTANCE_CHANGE_FOR_UPDATES, new MyLocationListener());
+		getCurrentLocation();
 
 	}
 
@@ -149,9 +146,9 @@ public class ShowLocationsActivity extends Activity {
 						toast.show();
 					} else {
 
-						toast.setText("Locations loaded: "
-								+ offices.getLocations().size());
-						toast.show();
+//						toast.setText("Locations loaded: "
+//								+ offices.getLocations().size());
+//						toast.show();
 
 						officesArrayList.clear();
 						for (int i = 0; i < offices.getLocations().size(); i++) {
@@ -249,18 +246,39 @@ public class ShowLocationsActivity extends Activity {
 
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-
-		// getMenuInflater().inflate(R.menu.view_targets, menu);
-		return true;
+	protected void getCurrentLocation() {
+		android.location.Location location = locationManager
+				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if (location != null) {
+			session.setCurrentLatitude(location.getLatitude());
+			session.setCurrentLongitude(location.getLongitude());
+			Log.i("CURR LOC",
+					location.getLatitude() + ", " + location.getLongitude());
+		}
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	private class MyLocationListener implements LocationListener {
 
-		return true;
+		public void onStatusChanged(String s, int i, Bundle b) {
+			Log.i("CURR LOC", "Provider status changed");
+		}
 
+		public void onProviderDisabled(String s) {
+			Log.i("CURR LOC", "Provider disabled by the user. GPS turned off");
+		}
+
+		public void onProviderEnabled(String s) {
+			Log.i("CURR LOC", "Provider enabled by the user. GPS turned on");
+		}
+
+		@Override
+		public void onLocationChanged(android.location.Location location) {
+			session.setCurrentLatitude(location.getLatitude());
+			session.setCurrentLongitude(location.getLongitude());
+			Log.i("CURR LOC",
+					location.getLatitude() + ", " + location.getLongitude());
+
+		}
 	}
 
 	private void initWebService() {

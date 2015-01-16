@@ -12,14 +12,10 @@ public class SessionManager {
 	int PRIVATE_MODE = 0;
 
 	private static final String PREFS_NAME = "LocationPref";
-
 	public static final String PREFS_KEY = "LocationKey";
 
-	// private static final String IS_LOGIN = "IsLoggedIn";
-	//
-	// private static final String IS_ENABLED = "IsEnabled";
-	//
-	// public static final String KEY_NAME = "username";
+	public static final String CURR_LAT = "CurrentLatitude";
+	public static final String CURR_LNG = "CurrentLongitude";
 
 	public SessionManager(Context context) {
 		this.mContext = context;
@@ -43,62 +39,38 @@ public class SessionManager {
 
 	}
 
-	// public void createLoginSession(String nujWord, String message) {
-	// //editor.putBoolean(IS_LOGIN, true);
-	//
-	// editor.putString(KEY_NAME, nujWord);
-	//
-	// editor.putString(KEY_TOKEN, message);
-	//
-	// editor.commit();
-	// }
+	public void setCurrentLocation(String lat, String lng) {
 
-	// public void checkLogin() {
-	// if (!this.isLoggedIn()) {
-	// Intent i = new Intent(mContext, LoginActivity.class);
-	// i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	//
-	// i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-	//
-	// mContext.startActivity(i);
-	// }
-	//
-	// }
+		editor.putString(CURR_LAT, lat);
+		editor.putString(CURR_LNG, lng);
 
-	// public HashMap<String, String> getUserDetails() {
-	// HashMap<String, String> user = new HashMap<String, String>();
-	// user.put(KEY_NAME, pref.getString(KEY_NAME, null));
-	//
-	// //user.put(KEY_TOKEN, pref.getString(KEY_TOKEN, null));
-	//
-	// return user;
-	// }
+		editor.commit();
+	}
 
-	// public void logoutUser() {
-	// editor.clear();
-	// editor.commit();
-	//
-	// // Intent i = new Intent(mContext, LoginActivity.class);
-	// // i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	// //
-	// // i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-	// //
-	// // mContext.startActivity(i);
-	// }
+	public void setCurrentLatitude(double lat) {
+		editor.putLong(CURR_LAT, Double.doubleToLongBits(lat));
+		editor.commit();
 
-	// public boolean isLoggedIn() {
-	// return pref.getBoolean(IS_LOGIN, false);
-	// }
-	//
-	// public boolean isEnabled() {
-	// return pref.getBoolean(IS_ENABLED, true);
-	// }
-	//
-	// public void setEnabled(Boolean state) {
-	//
-	// editor.putBoolean(IS_ENABLED, state);
-	//
-	// editor.commit();
-	// }
+	}
+
+	public double getCurrentLatitude() {
+
+		double latitude = Double.longBitsToDouble(pref.getLong(CURR_LAT, 0));
+		return latitude;
+
+	}
+
+	public void setCurrentLongitude(double lng) {
+		editor.putLong(CURR_LNG, Double.doubleToLongBits(lng));
+		editor.commit();
+
+	}
+
+	public double getCurrentLongitude() {
+
+		double longitude = Double.longBitsToDouble(pref.getLong(CURR_LNG, 0));
+		return longitude;
+
+	}
 
 }

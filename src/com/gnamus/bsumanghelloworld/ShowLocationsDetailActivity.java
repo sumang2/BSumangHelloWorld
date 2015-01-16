@@ -23,7 +23,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.gnamus.bsumanghelloworld.utilities.SessionManager;
 import com.google.android.gms.maps.GoogleMap;
 
 public class ShowLocationsDetailActivity extends Activity {
@@ -39,12 +41,17 @@ public class ShowLocationsDetailActivity extends Activity {
 
 	private GoogleMap map;
 	private String STATIC_MAP_API_ENDPOINT;
-	protected String phoneExtra;
+	private String phoneExtra;
+	private String latitudeExtra;
+	private String longitudeExtra;
+	public SessionManager session;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_show_locations_detail);
+
+		session = new SessionManager(getApplicationContext());
 
 		name = (TextView) findViewById(R.id.name_detail);
 		addressLine1 = (TextView) findViewById(R.id.address_detail_line1);
@@ -57,7 +64,6 @@ public class ShowLocationsDetailActivity extends Activity {
 		Intent intentObject = getIntent();
 		if (intentObject != null) {
 			String nameExtra = intentObject.getStringExtra("name");
-			// if (nameExtra != null) {
 			String addressExtra = intentObject.getStringExtra("address");
 			String address2Extra = intentObject.getStringExtra("address2");
 			String cityExtra = intentObject.getStringExtra("city");
@@ -65,11 +71,9 @@ public class ShowLocationsDetailActivity extends Activity {
 			String zipExtra = intentObject.getStringExtra("zip");
 			phoneExtra = intentObject.getStringExtra("phone");
 			String faxExtra = intentObject.getStringExtra("fax");
-			String latitudeExtra = intentObject.getStringExtra("latitude");
-			String longitudeExtra = intentObject.getStringExtra("longitude");
+			latitudeExtra = intentObject.getStringExtra("latitude");
+			longitudeExtra = intentObject.getStringExtra("longitude");
 			String imageExtra = intentObject.getStringExtra("office_image");
-
-			// }
 
 			STATIC_MAP_API_ENDPOINT = ("http://maps.google.com/maps/api/staticmap?center="
 					+ latitudeExtra
@@ -109,7 +113,8 @@ public class ShowLocationsDetailActivity extends Activity {
 
 			name.setText(nameExtra);
 			addressLine1.setText(addressExtra + " " + address2Extra);
-			addressLine2.setText(cityExtra + ", " + stateExtra + " " + zipExtra);
+			addressLine2
+					.setText(cityExtra + ", " + stateExtra + " " + zipExtra);
 
 			new LoadImage().execute(imageExtra);
 
@@ -137,13 +142,27 @@ public class ShowLocationsDetailActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 
-				String geoLocation = "geo:47.6,-122.3?z=11";
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri
-						.parse(geoLocation));
-				if (intent.resolveActivity(getPackageManager()) != null) {
-					startActivity(intent);
-				}
+				Log.i("LAT", latitudeExtra);
+				Log.i("LNG", longitudeExtra);
 
+//				Toast.makeText(getApplicationContext(),
+//						session.getCurrentLatitude() + "", Toast.LENGTH_SHORT)
+//						.show();
+				if (session.getCurrentLatitude() != 0) {
+					Intent intent = new Intent(
+							android.content.Intent.ACTION_VIEW, Uri
+									.parse("http://maps.google.com/maps?saddr="
+											+ session.getCurrentLatitude()
+											+ ","
+											+ session.getCurrentLongitude()
+											+ "&daddr=" + latitudeExtra + ","
+											+ longitudeExtra));
+					startActivity(intent);
+				} else {
+					Toast.makeText(getApplicationContext(),
+							"Acquiring your location...", Toast.LENGTH_SHORT)
+							.show();
+				}
 			}
 		});
 
@@ -153,9 +172,6 @@ public class ShowLocationsDetailActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			// pDialog = new ProgressDialog(MainActivity.this);
-			// pDialog.setMessage("Loading Image ....");
-			// pDialog.show();
 		}
 
 		protected Bitmap doInBackground(String... args) {
@@ -171,9 +187,7 @@ public class ShowLocationsDetailActivity extends Activity {
 		protected void onPostExecute(Bitmap image) {
 			if (image != null) {
 				officeImage.setImageBitmap(image);
-				// pDialog.dismiss();
 			} else {
-				// pDialog.dismiss();
 				// Toast.makeText(MainActivity.this,
 				// "Image Does Not exist or Network Error",
 				// Toast.LENGTH_SHORT).show();
@@ -184,7 +198,6 @@ public class ShowLocationsDetailActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.show_locations_detail, menu);
 		return true;
 	}
